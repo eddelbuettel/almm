@@ -1,13 +1,15 @@
 ## 'Activate-Linux' (based) Market Monitor
 
-[activate-linux][activate linux] is a very cute and very clever little application (and pun!) that
-puts a (user-selectable) text very discretely in the bottom right of the desktop.
+[activate-linux][activate linux] is a very neat little application (and pun!) that puts a
+(user-selectable) text very discretely in the bottom right of the desktop. Apparently this is
+mocking another OS which posts a 'please activate' message there.
 
-It seemed like the perfect vessel to connect the Redis (or Valkey) pub/sub
-mechanism in order (in a very lightweight manner) update display text with
-current market index levels and changes.
+It seemed like the perfect vessel to connect the Redis (or Valkey) pub/sub mechanism in order to (in
+a very lightweight manner) update display text with current market index levels and changes. 
 
 You can see it in action in the very short little 'video' recorded off my desktop demonstrating it.
+(Note that the video shows variable `SYM`; this should actually be `SYMBOL`. As we use the default
+value it does not impact the demo.)
 
 ### Demo
 
