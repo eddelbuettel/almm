@@ -11,9 +11,13 @@ You can see it in action in the very short little 'video' recorded off my deskto
 (Note that the video shows variable `SYM`; this should actually be `SYMBOL`. As we use the default
 value it does not impact the demo.)
 
-### Demo
+### Demos
 
-Click on the image to see the video:
+A shorter and simpler animated gif shows the monitor springing into action once a publisher runs:
+
+![](https://eddelbuettel.github.io/images/2025-06-12/almm_publisher_dot_r_demo_%202025-06-12_08-30.gif)
+
+We also have a slightly longer and more detailed short video with a voice overlay (click on the image to see the video):
 
 [![almm demo](https://img.youtube.com/vi/oCjd_qgMM1U/0.jpg)](https://www.youtube.com/watch?v=oCjd_qgMM1U)
 
