@@ -32,6 +32,14 @@ order to access the [Redis pub/sub framework][pub sub]. A sibbling repository
 the demo above and may serve as a start with [Redis pub/sub][pub sub] (and I may add more examples
 there).
 
+### Building
+
+It all 'just works' on, _e.g., Ubuntu if you have all the required packages. On my laptop I needed
+to add `libxfixes-dev`, `libxrandr-dev`, `libxinerama-dev`, `libwayland-bin`, `libwayland-dev`,
+`wayland-protocols` in addition to what was already installed.
+
+It works with either `redis-server` or `valkey-server`.
+
 ### Author
 
 For the changes in this repo, Dirk Eddelbuettel
