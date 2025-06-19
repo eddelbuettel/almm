@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define __USE_XOPEN     // for strptime
 #include <time.h>
 #include <unistd.h>
 
@@ -24,7 +25,6 @@
 #include "../options.h"
 
 // Structure to hold parsed stock data
-// Contains some currently unused elements and could be shortened
 typedef struct {
     char fmttime[32];
     double time;
@@ -43,6 +43,7 @@ typedef struct {
 
 // Global variables for Redis
 stock_data_t current_stock_data = {0};
+time_t most_recent = 0;
 redisContext *redis_ctx = NULL;
 
 // generated function: returns XEvent name
@@ -108,10 +109,20 @@ int parse_stock_data(const char* data_str, stock_data_t* stock_data) {
     }
 
     free(data_copy);
-    stock_data->updated = 1;
+
+    struct tm tm;
+    strptime(stock_data->fmttime, "%Y-%m-%d %H:%M:%S", &tm);
+    stock_data->time = mktime(&tm);
+    if (stock_data->time > most_recent) {
+        stock_data->updated = 1;
+        most_recent = stock_data->time;
+        __info__("Seeing updated data for %s at %s\n", stock_data->symbol, stock_data->fmttime);
+    } else {
+        stock_data->updated = 0;
+    }
+    
     __info__("Field count %d\n", field_count);
-    //return (field_count == 5) ? 0 : -1;
-    return 0;
+    return (field_count == 8) ? 0 : -1;
 }
 
 // Function to format stock data and time into activate-linux fields
@@ -158,8 +169,12 @@ int handle_redis_messages() {
             current_stock_data.symbol[sizeof(current_stock_data.symbol) - 1] = '\0';
 
             if (parse_stock_data(message, &current_stock_data) == 0) {
-                __info__("Stock data updated for %s to %s\n", channel, message);
-                draw_stock_data();
+                if (current_stock_data.updated == 1) {
+                    __info__("Stock data updated for %s to %s\n", channel, message);
+                    draw_stock_data();
+                } else {
+                    __info__("Ignoring message %s:%s\n", channel, message);
+                }
             } else {
                 printf("Error parsing stock data: %s\n", message);
             }
@@ -179,15 +194,9 @@ int handle_redis_messages() {
 int x11_backend_start(void)
 {
     // init_redis_subscription START
-    char symdefault[] = "SP500";
-    const char* symbol = getenv("SYMBOL");
+    const char* symbols[] = { "SP500", "ES1" };
     const char* host = "127.0.0.1";
     int port = 6379;
-
-    if (symbol == NULL) {
-        symbol = symdefault;
-    }
-
     struct timeval timeout = { 1, 500000 }; // 1.5 seconds
 
     redis_ctx = redisConnectWithTimeout(host, port, timeout);
@@ -203,23 +212,26 @@ int x11_backend_start(void)
 
     __info__("Connected to Redis server %s:%d\n", host, port);
 
-    // Subscribe to the symbol
-    redisReply *reply = redisCommand(redis_ctx, "SUBSCRIBE %s", symbol);
-    if (!reply) {
-        printf("Error: Failed to subscribe to %s\n", symbol);
-        return -1;
+    for (size_t i = 0; i < sizeof(symbols) / sizeof(symbols[0]); i++) {
+        const char* symbol = symbols[i];
+
+        // Subscribe to the symbol
+        redisReply *reply = redisCommand(redis_ctx, "SUBSCRIBE %s", symbol);
+        if (!reply) {
+            printf("Error: Failed to subscribe to %s\n", symbol);
+            return -1;
+        }
+
+        __info__("Subscribed to symbol: %s\n", symbol);
+
+        // Handle subscription confirmation
+        if (reply->type == REDIS_REPLY_ARRAY && reply->elements >= 3) {
+            __debug__("Subscription confirmed for: %s\n", reply->element[1]->str);
+        }
+
+        freeReplyObject(reply);
     }
-
-    __info__("Subscribed to symbol: %s\n", symbol);
-
-    // Handle subscription confirmation
-    if (reply->type == REDIS_REPLY_ARRAY && reply->elements >= 3) {
-        __debug__("Subscription confirmed for: %s\n", reply->element[1]->str);
-    }
-
-    freeReplyObject(reply);
     // init_redis_subscription END
-
 
     __debug__("Opening display\n");
     Display *d = XOpenDisplay(NULL);
@@ -240,7 +252,7 @@ int x11_backend_start(void)
 	}
     // https://x.org/releases/current/doc/man/man3/Xinerama.3.xhtml
     __debug__("Finding all screens in use using Xinerama\n");
-    int num_entries = 0;
+    int num_entries = 0, min_entry = 1;
     XineramaScreenInfo *si = XineramaQueryScreens(d, &num_entries);
     // if xinerama fails
     if (si == NULL)
@@ -304,7 +316,7 @@ int x11_backend_start(void)
     int overlay_width = options.overlay_width * options.scale;
     __debug__("Scaled width:  %d px\n", overlay_width);
 
-    for (int i = 0; i < num_entries; i++)
+    for (int i = min_entry; i < num_entries; i++)
     {
         __debug__("Creating overlay on %d screen\n", i);
         overlay[i] = XCreateWindow(d,                                                                // display
@@ -414,7 +426,7 @@ int x11_backend_start(void)
                 // Keep processing until no more messages
             //}
             __info__("Text now set, num_entries %d\n", num_entries);
-            for (int i = 0; i < num_entries; i++) {
+            for (int i = min_entry; i < num_entries; i++) {
                 draw_text(cairo_ctx[i], 0);
             }
         }
