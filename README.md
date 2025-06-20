@@ -1,4 +1,4 @@
-## 'Activate-Linux' (based) Market Monitor
+## almm: Activate-Linux (based) Market Monitor
 
 [activate-linux][activate linux] is a very neat little application (and pun!) that puts a
 (user-selectable) text very discretely in the bottom right of the desktop. Apparently this is
@@ -34,11 +34,24 @@ there).
 
 ### Building
 
-It all 'just works' on, _e.g., Ubuntu if you have all the required packages. On my laptop I needed
-to add `libxfixes-dev`, `libxrandr-dev`, `libxinerama-dev`, `libwayland-bin`, `libwayland-dev`,
-`wayland-protocols` in addition to what was already installed.
+It all 'just works' on, _e.g._, Ubuntu if you have all the required packages. On my laptop I needed
+to add `libcairo-dev`, `libxfixes-dev`, `libxrandr-dev`, `libxinerama-dev`, `libwayland-bin`,
+`libwayland-dev`, `wayland-protocols` in addition to what was already installed (and of course
+`libhiredis-dev` and `libevent-dev` for our extension).
 
 It works with either `redis-server` or `valkey-server`.
+
+### Running
+
+See the `activate-linux --help` for available command-line options. Adding `-v` (or `-vv` or `-vvv`)
+adds debugging info, while adding font scale or bold font use or ... can aide in tuning the display.
+
+At present, the binary is customized for the personal use case listening to symbols ES1 and SP500
+and displaying whichever was most current. That works really well given that SP500 (via symbol
+`^GSPC`) updates near real-time but only during standard market hours, whereas ES1 (via symbol
+`ES=F` is available almost 24 hours (excluding 15:15h to 17:00h) for five days, each time starting
+the prior day (i.e. Sunday afternoon 17:00h open for electrinic trading to Friday 15:15h; all times
+Central).
 
 ### Author
 
