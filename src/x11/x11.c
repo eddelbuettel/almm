@@ -125,6 +125,53 @@ int parse_stock_data(const char* data_str, stock_data_t* stock_data) {
     return (field_count == 8) ? 0 : -1;
 }
 
+void assign_rgb_colors(double chg, float cols[9][3]) {
+    int p = chg / 0.125;        // truncating division used on purpose here
+    p = (p > 8) ? 8 : p; 	// so that we don't need fmin() and hence -lm linking */
+    options.text_color = rgba_color_new(cols[p][0], cols[p][1], cols[p][2], 0.6);
+}
+
+void set_rgb_colors(double chg) {
+    // these are from ColorBrewer and are the red and green four valued multi-hue
+    // values, divided by 255 to fit the [0, 1) range here
+    // see
+    //   RColorBrewer::display.brewer.pal(9, "Reds")
+    // use
+    //   M <- col2rgb(RColorBrewer::brewer.pal(9, "Reds"))/255
+    //   for (i in 1:9) cat("{ ", paste(sprintf("%.8f",M[,i]), collapse=", "), "},\n")
+    float reds[9][3] = {
+        {  1.00000000, 0.96078431, 0.94117647 },
+        {  0.99607843, 0.87843137, 0.82352941 },
+        {  0.98823529, 0.73333333, 0.63137255 },
+        {  0.98823529, 0.57254902, 0.44705882 },
+        {  0.98431373, 0.41568627, 0.29019608 },
+        {  0.93725490, 0.23137255, 0.17254902 },
+        {  0.79607843, 0.09411765, 0.11372549 },
+        {  0.64705882, 0.05882353, 0.08235294 },
+        {  0.40392157, 0.00000000, 0.05098039 }
+    };
+    // see
+    //   RColorBrewer::display.brewer.pal(9, "Greens")
+    // use
+    //   M <- col2rgb(RColorBrewer::brewer.pal(9, "Greens"))/255
+    //   for (i in 1:9) cat("{ ", paste(sprintf("%.8f",M[,i]), collapse=", "), "},\n")
+    float greens[9][3] = {
+        {  0.96862745, 0.98823529, 0.96078431 },
+        {  0.89803922, 0.96078431, 0.87843137 },
+        {  0.78039216, 0.91372549, 0.75294118 },
+        {  0.63137255, 0.85098039, 0.60784314 },
+        {  0.45490196, 0.76862745, 0.46274510 },
+        {  0.25490196, 0.67058824, 0.36470588 },
+        {  0.13725490, 0.54509804, 0.27058824 },
+        {  0.00000000, 0.42745098, 0.17254902 },
+        {  0.00000000, 0.26666667, 0.10588235 }
+    };
+    if (chg < 0)
+        assign_rgb_colors(-chg, reds);
+    else
+        assign_rgb_colors(chg, greens);
+}
+
 // Function to format stock data and time into activate-linux fields
 void draw_stock_data() {
     sprintf(current_stock_data.title, "%.2f %+.2f %+.3f%%",
@@ -136,6 +183,7 @@ void draw_stock_data() {
             current_stock_data.fmttime);
     options.title = current_stock_data.title;
     options.subtitle = current_stock_data.subtitle;
+    set_rgb_colors(current_stock_data.percent_change);
 }
 
 // Function to handle Redis pub/sub messages
