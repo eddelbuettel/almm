@@ -126,7 +126,7 @@ int parse_stock_data(const char* data_str, stock_data_t* stock_data) {
 }
 
 void assign_rgb_colors(double chg, float cols[9][3]) {
-    int p = chg / 0.125;        // truncating division used on purpose here
+    int p = chg / 0.250;        // truncating division used on purpose here
     p = (p > 8) ? 8 : p; 	// so that we don't need fmin() and hence -lm linking */
     options.text_color = rgba_color_new(cols[p][0], cols[p][1], cols[p][2], 0.6);
 }
