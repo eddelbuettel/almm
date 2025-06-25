@@ -97,11 +97,11 @@ int parse_stock_data(const char* data_str, stock_data_t* stock_data) {
             case 5: // volume
                 stock_data->volume = atol(token);
                 break;
-            case 6: // percent_change
-                stock_data->percent_change = atof(token);
-                break;
-            case 7: // change
+            case 6: // change
                 stock_data->change = atof(token);
+                break;
+            case 7: // percent_change
+                stock_data->percent_change = atof(token);
                 break;
         }
         field_count++;
