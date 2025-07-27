@@ -27,6 +27,8 @@ typedef struct options_t {
 #ifdef X11
   bool force_xshape;
 #endif
+  /* Redis */
+  char *host;
 } Options;
 
 extern Options options;

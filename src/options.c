@@ -45,6 +45,9 @@ Options options = {
 #ifdef X11
       .force_xshape = false,
 #endif
+
+  // hostname for Redis
+  .host = NULL,
 };
 
 
@@ -77,6 +80,7 @@ void parse_options(int argc, char *const argv[]) {
 #ifdef X11
     {"force-xshape",           no_argument,       NULL, 'S'},
 #endif
+    {"host",                required_argument, NULL, 'H'},
 #ifdef LIBCONFIG
     {"config-file",         required_argument, NULL, 'C'},
 #endif
@@ -85,7 +89,7 @@ void parse_options(int argc, char *const argv[]) {
   };
 
   int opt;
-  while ((opt = getopt_long(argc, argv, "t:m:p:f:bic:x:y:s:wdKvlqGh"
+  while ((opt = getopt_long(argc, argv, "t:m:p:f:bic:x:y:s:wdKvlqGH:h"
 #ifdef X11
       "S"
 #endif
@@ -113,6 +117,8 @@ void parse_options(int argc, char *const argv[]) {
       case 'v': inc_verbose(); break;
       case 'q': set_silent(); break;
       case 'G': options.gamescope_overlay = true; break;
+      // Redis
+      case 'H': options.host = optarg; break;
 #ifdef LIBCONFIG
       case 'C': load_config(optarg); break;
 #endif
@@ -206,6 +212,10 @@ void print_help(const char *const file_name) {
 #ifdef LIBCONFIG
   HELP("-C, --config-file \t\tLoad options from an external configuration file");
 #endif
+  END();
+
+  SECTION("Redis", "");
+  HELP("-H, --host hostname \t\tSet Redis server hostname");
 
   END();
 #undef HELP

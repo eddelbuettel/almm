@@ -247,6 +247,9 @@ int x11_backend_start(void)
     int port = 6379;
     struct timeval timeout = { 1, 500000 }; // 1.5 seconds
 
+    if (options.host != NULL)
+        host = options.host;
+
     redis_ctx = redisConnectWithTimeout(host, port, timeout);
     if (!redis_ctx || redis_ctx->err) {
         if (redis_ctx) {
