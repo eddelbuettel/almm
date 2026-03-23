@@ -81,9 +81,9 @@ int main(int argc, char *const argv[]) {
   // if one backend fails, we'll try next one
   int try_next = 1;
   __info__("Starting backend\n");
-#ifdef WAYLAND
-  if (try_next) try_next = wayland_backend_start();
-#endif
+//#ifdef WAYLAND
+ // if (try_next) try_next = wayland_backend_start();
+//#endif
 #ifdef X11
   if (try_next) try_next = x11_backend_start();
 #endif

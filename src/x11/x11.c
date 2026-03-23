@@ -304,7 +304,7 @@ int x11_backend_start(void)
 	}
     // https://x.org/releases/current/doc/man/man3/Xinerama.3.xhtml
     __debug__("Finding all screens in use using Xinerama\n");
-    int num_entries = 0, min_entry = 1;
+    int num_entries = 0, screen_map[] = {1, 0}; // DEdd: map governs which screen gets display, see below
     XineramaScreenInfo *si = XineramaQueryScreens(d, &num_entries);
     // if xinerama fails
     if (si == NULL)
@@ -368,8 +368,10 @@ int x11_backend_start(void)
     int overlay_width = options.overlay_width * options.scale;
     __debug__("Scaled width:  %d px\n", overlay_width);
 
-    for (int i = min_entry; i < num_entries; i++)
+    for (int i = 0; i < num_entries; i++)
     {
+        if (screen_map[i] == 0) continue;
+
         __debug__("Creating overlay on %d screen\n", i);
         overlay[i] = XCreateWindow(d,                                                                // display
                                    root,                                                             // parent
@@ -478,8 +480,11 @@ int x11_backend_start(void)
                 // Keep processing until no more messages
             //}
             __info__("Text now set, num_entries %d\n", num_entries);
-            for (int i = min_entry; i < num_entries; i++) {
-                draw_text(cairo_ctx[i], 0);
+            for (int i = 0; i < num_entries; i++) {
+                if (screen_map[i] == 1) {
+                    __info__("Showing in screen %d\n", i);
+                    draw_text(cairo_ctx[i], 0);
+                }
             }
         }
 
